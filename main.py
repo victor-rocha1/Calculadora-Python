@@ -1,5 +1,7 @@
 import flet as ft           #Biblioteca usada
 from flet import colors     #Cores da biblioteca
+from decimal import Decimal #Casas decimais no resultado
+
 
 #Página principal
 def main(page: ft.Page):
@@ -16,20 +18,24 @@ def main(page: ft.Page):
 
     #Função para calcular
     def calculo(operador, valor_atual):
-        value = eval(valor_atual)
+        try:
+            value = eval(valor_atual)
+            if operador == '%':
+                value /= 100
+            elif operador == '±':
+                value = -value
+        except:
+            return 'ERROR'
+        
+        #Quantidade de casas decimais no resultado final
+        digitos = min(abs(Decimal(value).as_tuple().exponent), 5)
 
-        if operador == '%':
-            value /= 100
-        elif operador == '±':
-            value = -value
-
-        return value
-
+        return format(value, f'.{digitos}f')
 
     
     #Seleção de números e operações
     def select(e):
-        valor_atual = resultado.value if resultado.value != '0' else ''
+        valor_atual = resultado.value if resultado.value not in ('0','ERROR') else ''
         value = e.control.content.value
 
         if value.isdigit():
@@ -44,6 +50,7 @@ def main(page: ft.Page):
 
             if value[-1] in ('=', '%', '±'):
                 value = calculo(operador=value[-1], valor_atual=valor_atual)
+
 
 
         resultado.value = value
